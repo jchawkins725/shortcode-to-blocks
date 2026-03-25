@@ -1,0 +1,3 @@
+.stb-panel .components-panel__body { padding-top: 4px; }
+.stb-panel .stb-summary li { margin: 0 0 4px; }
+.stb-panel .components-button.is-secondary.is-destructive { border-color: currentColor; }
