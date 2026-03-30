@@ -1,22 +1,26 @@
 === Shortcode to Blocks Converter ===
 Contributors: jchawkins725
-Tags: gutenberg, block-editor, wpbakery, visual-composer, shortcode, converter, migration, blocks
+Tags: gutenberg, wpbakery, shortcode, converter, migration
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Convert WPBakery Page Builder shortcodes to native Gutenberg blocks — one page at a time.
+Convert WPBakery Page Builder shortcodes to native Gutenberg blocks, one page at a time.
 
 == Description ==
 
-**Migrate from WPBakery Page Builder to Gutenberg — Free**
+Shortcode to Blocks Converter helps you migrate WPBakery Page Builder content to the native WordPress block editor.
 
-Shortcode to Blocks Converter is a free tool that converts the most common WPBakery Page Builder (Visual Composer) shortcodes into native WordPress Gutenberg blocks. Edit each post in the block editor, click **Convert**, and your WPBakery layout is replaced with clean, modern blocks.
+It converts the most common WPBakery Page Builder (Visual Composer) shortcodes into native WordPress blocks.
 
-**Important**: This plugin is designed exclusively for WPBakery Page Builder shortcodes (vc_* elements). It does not work with Elementor, Divi, Beaver Builder, or other page builders.
+= Important =
+
+This plugin works only with WPBakery Page Builder shortcodes (vc_* elements).
+
+WPBakery Page Builder and Visual Composer are trademarks of their respective owners. This plugin is not affiliated with or endorsed by them.
 
 = What Gets Converted =
 
@@ -39,10 +43,10 @@ Non-WPBakery shortcodes (contact forms, plugins, etc.) are automatically wrapped
 
 * One-click convert and revert on each post/page edit screen
 * Works in both the block editor (Gutenberg sidebar panel) and the classic editor (metabox)
-* Automatic backup of original content — revert any time
-* Dashboard with VC detection stats
-* Settings for allowed post types and required capability
-* Extensible architecture — the Pro add-on unlocks advanced converters, batch tools, logging, and more
+* Automatic backup of original content, revert any time
+* Dashboard with conversion stats
+* Settings for allowed post types and user capability requirements
+* Extensible architecture with additional features available in a Pro version
 
 = Supported Shortcodes (Free) =
 
@@ -58,18 +62,10 @@ Non-WPBakery shortcodes (contact forms, plugins, etc.) are automatically wrapped
 | `vc_separator` | Separator |
 | `vc_empty_space` | Spacer |
 
-= Need More? =
+= Need more features? =
 
-[Shortcode to Blocks Converter Pro](https://www.jonathanchawkins.com/shortcode-to-blocks-pro/) adds:
-
-* **17 additional converters** — CTAs, toggles, video, galleries, maps, tabs, tours, accordions, icons, grids, and more
-* **Batch conversion** — convert hundreds of posts at once with dry-run preview
-* **Batch revert** — undo an entire batch in one click
-* **Bulk action** — convert directly from the Posts / Pages list table
-* **Logging** — full history of every conversion, revert, and error with CSV export
-* **Tools** — backup purge, log management, VC detection scan
-* **Converted Posts** — filterable list of everything that has been converted
-* **License key activation** — receive updates and support
+A Pro version is available that includes additional converters, batch processing tools, logging, and more:
+https://www.jonathanchawkins.com/shortcode-to-blocks-pro/
 
 == Installation ==
 
@@ -92,6 +88,9 @@ They're wrapped in a Gutenberg Shortcode block and continue to render normally. 
 = Is it safe for production? =
 The plugin creates automatic backups, but always test on a staging copy first and back up your database before converting many posts.
 
+= Does this plugin send data to external servers? =
+No. All conversions are performed locally on your site. This plugin does not send data to external services.
+
 = Do I need the Pro version? =
 The free version handles the most common layout and content shortcodes for single-post conversion. If you need batch tools, advanced converters (video, galleries, tabs, accordions, CTAs, maps), logging, or bulk actions, the Pro add-on is the way to go.
 
@@ -99,7 +98,7 @@ The free version handles the most common layout and content shortcodes for singl
 
 1. Gutenberg sidebar panel with Convert / Revert buttons
 2. Classic editor metabox
-3. Dashboard with VC detection overview
+3. Dashboard with conversion overview
 4. Settings page
 
 == Changelog ==
@@ -109,8 +108,8 @@ The free version handles the most common layout and content shortcodes for singl
 * Converts 11 core WPBakery shortcodes to Gutenberg blocks
 * Single-post convert and revert via editor sidebar or metabox
 * Automatic content backup in post meta
-* Dashboard with VC post detection
-* Settings for post types and capability
+* Dashboard with conversion overview
+* Settings for post types and user capability requirements
 * Extensible architecture for Pro add-on
 
 == Upgrade Notice ==

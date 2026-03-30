@@ -1,17 +1,19 @@
 jQuery(document).ready(function ($) {
+  const { __ } = wp.i18n;
+
   function showAdminNotice(message, type) {
     type = type || "success";
-    var notice = $(
-      '<div class="notice notice-' +
-        type +
-        ' is-dismissible"><p>' +
-        message +
-        "</p></div>"
-    );
-    $("#stb-convert-button").closest(".postbox").prepend(notice);
+    var $notice = jQuery("<div>", {
+      class: "notice notice-" + type + " is-dismissible"
+    });
+
+    var $p = jQuery("<p>");
+    $p.text(String(message || ""));
+    $notice.append($p);
+    $("#stb-convert-button").closest(".postbox").prepend($notice);
     setTimeout(function () {
-      notice.fadeOut(300, function () {
-        notice.remove();
+      $notice.fadeOut(300, function () {
+        $notice.remove();
       });
     }, 5000);
   }
@@ -19,7 +21,7 @@ jQuery(document).ready(function ($) {
   $("#stb-convert-button").on("click", function () {
     var postId = $(this).data("post-id");
     var $btn = $(this);
-    $btn.attr("disabled", true).text("Converting...");
+    $btn.attr("disabled", true).text(__("Converting...", "shortcode-to-blocks"));
 
     $.ajax({
       url: stbConvert.ajaxUrl,
@@ -31,17 +33,17 @@ jQuery(document).ready(function ($) {
       },
       success: function (response) {
         if (response.success) {
-          showAdminNotice("Successfully converted to Gutenberg!");
+          showAdminNotice(__("Successfully converted to Gutenberg!", "shortcode-to-blocks"));
           location.reload();
         } else {
           showAdminNotice(response.data, "error");
         }
       },
       error: function () {
-        alert("AJAX error, please try again.");
+        alert(__("AJAX error, please try again.", "shortcode-to-blocks"));
       },
       complete: function () {
-        $btn.attr("disabled", false).text("Convert Content");
+        $btn.attr("disabled", false).text(__("Convert Content", "shortcode-to-blocks"));
       },
     });
   });
@@ -49,14 +51,15 @@ jQuery(document).ready(function ($) {
   $("#stb-revert-button").on("click", function () {
     if (
       !confirm(
-        "Are you sure you want to revert to the original WPBakery content?"
+        __("Are you sure you want to revert to the original WPBakery content?", "shortcode-to-blocks")
       )
-    )
+    ) {
       return;
+    }
 
     var postId = $(this).data("post-id");
     var $btn = $(this);
-    $btn.attr("disabled", true).text("Reverting...");
+    $btn.attr("disabled", true).text(__("Reverting...", "shortcode-to-blocks"));
 
     $.ajax({
       url: stbConvert.ajaxUrl,
@@ -68,17 +71,17 @@ jQuery(document).ready(function ($) {
       },
       success: function (response) {
         if (response.success) {
-          showAdminNotice("Content reverted to WPBakery.", "warning");
+          showAdminNotice(__("Content reverted to WPBakery.", "shortcode-to-blocks"), "warning");
           location.reload();
         } else {
           showAdminNotice(response.data, "error");
         }
       },
       error: function () {
-        alert("AJAX error, please try again.");
+        alert(__("AJAX error, please try again.", "shortcode-to-blocks"));
       },
       complete: function () {
-        $btn.attr("disabled", false).text("Revert");
+        $btn.attr("disabled", false).text(__("Revert", "shortcode-to-blocks"));
       },
     });
   });

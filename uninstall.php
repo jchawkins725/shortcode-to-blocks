@@ -19,12 +19,14 @@ function stb_should_retain_data() {
 
 function stb_delete_options_and_transients() {
     global $wpdb;
-    $like  = $wpdb->esc_like('stb_') . '%';
-    $table = $wpdb->options;
-    $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE option_name LIKE %s", $like));
+    $like = $wpdb->esc_like('stb_') . '%';
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- uninstall cleanup
+    $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE %s", $like));
     $t_like = '%' . $wpdb->esc_like('stb_') . '%';
-    $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE option_name LIKE %s", '_transient_' . $t_like));
-    $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE option_name LIKE %s", '_transient_timeout_' . $t_like));
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_' . $t_like));
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE %s", '_transient_timeout_' . $t_like));
 }
 
 function stb_delete_post_meta_keys(array $keys) {

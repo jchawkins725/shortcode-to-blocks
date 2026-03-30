@@ -5,8 +5,14 @@ defined('ABSPATH') || exit;
 
 class Helpers {
     public static function log($message, $level = 'info') {
-        if (defined('STB_LOG') && STB_LOG) {
-            error_log('[stb][' . $level . '] ' . (is_string($message) ? $message : wp_json_encode($message)));
+        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            if (function_exists('wp_trigger_error')) {
+                wp_trigger_error(
+                    '[stb][' . $level . ']',
+                    is_string($message) ? $message : wp_json_encode($message),
+                    E_USER_NOTICE
+                );
+            }
         }
     }
 

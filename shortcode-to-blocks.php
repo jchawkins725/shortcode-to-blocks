@@ -40,8 +40,6 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links)
 
 // Boot
 add_action('plugins_loaded', function () {
-    load_plugin_textdomain('shortcode-to-blocks', false, dirname(plugin_basename(__FILE__)) . '/languages');
-
     if (is_admin()) {
         (new STB\admin\Admin())->init();
         (new STB\admin\Settings())->init();

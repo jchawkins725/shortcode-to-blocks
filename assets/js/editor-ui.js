@@ -2,13 +2,14 @@
 (function (wp) {
   if (!wp || !wp.plugins || !wp.editPost) return;
 
+  const { __, sprintf } = wp.i18n;
+
   var el = wp.element.createElement;
   var registerPlugin = wp.plugins.registerPlugin;
   var PluginDocumentSettingPanel = wp.editPost.PluginDocumentSettingPanel;
   var Button = wp.components.Button;
   var Spinner = wp.components.Spinner;
   var Notice = wp.components.Notice;
-  var ButtonGroup = wp.components.ButtonGroup;
   var useState = wp.element.useState;
   var select = wp.data.select;
 
@@ -26,13 +27,24 @@
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res && res.success) {
-          setNotice({ status: 'success', msg: (res.data && res.data.message) || 'Done.' });
+          setNotice({
+            status: 'success',
+            msg: (res.data && res.data.message) || __('Done.', 'shortcode-to-blocks')
+          });
           window.location.reload();
         } else {
-          setNotice({ status: 'error', msg: (res && res.data) || 'Request failed.' });
+          setNotice({
+            status: 'error',
+            msg: (res && res.data) || __('Request failed.', 'shortcode-to-blocks')
+          });
         }
       })
-      .catch(function () { setNotice({ status: 'error', msg: 'Network error.' }); })
+      .catch(function () {
+        setNotice({
+          status: 'error',
+          msg: __('Network error.', 'shortcode-to-blocks')
+        });
+      })
       .finally(function () { setBusy(false); });
   }
 
@@ -57,40 +69,97 @@
 
     return el(
       PluginDocumentSettingPanel,
-      { name: 'stb-panel', title: 'Shortcode → Blocks', className: 'stb-panel' },
+      {
+        name: 'stb-panel',
+        title: __('Shortcode → Blocks', 'shortcode-to-blocks'),
+        className: 'stb-panel'
+      },
 
-      notice && el(Notice, { status: notice.status, isDismissible: true, onRemove: function () { setNotice(null); } }, notice.msg),
-
-      el('p', { className: 'components-help' }, 'Convert WPBakery shortcodes to native Gutenberg blocks.'),
-
-      el('ul', { className: 'stb-summary', style: { margin: '0 0 12px', paddingLeft: '18px' } },
-        el('li', null, hasVC ? 'WPBakery content detected' : 'No WPBakery shortcodes detected'),
-        el('li', null, hasBackup ? 'Backup available' : 'No backup stored yet'),
-        vcCount !== null && el('li', null, 'Shortcodes found: ' + vcCount)
+      notice && el(
+        Notice,
+        {
+          status: notice.status,
+          isDismissible: true,
+          onRemove: function () { setNotice(null); }
+        },
+        notice.msg
       ),
 
-      el('div', { className: 'stb-actions', style: { display: 'flex', gap: '8px', marginBottom: '4px' } },
-        hasVC && el(Button, {
-          variant: 'primary',
-          onClick: function () { convertOrRevert('convert', setBusy, setNotice); },
-          disabled: busy,
-        }, busy ? el(Spinner, null) : 'Convert to blocks'),
+      el(
+        'p',
+        { className: 'components-help' },
+        __('Convert WPBakery shortcodes to native Gutenberg blocks.', 'shortcode-to-blocks')
+      ),
 
-        hasBackup && el(Button, {
-          variant: 'secondary',
-          isDestructive: true,
-          onClick: function () {
-            if (window.confirm('Revert to original WPBakery content?')) {
-              convertOrRevert('revert', setBusy, setNotice);
-            }
+      el(
+        'ul',
+        { className: 'stb-summary', style: { margin: '0 0 12px', paddingLeft: '18px' } },
+        el(
+          'li',
+          null,
+          hasVC
+            ? __('WPBakery content detected', 'shortcode-to-blocks')
+            : __('No WPBakery shortcodes detected', 'shortcode-to-blocks')
+        ),
+        el(
+          'li',
+          null,
+          hasBackup
+            ? __('Backup available', 'shortcode-to-blocks')
+            : __('No backup stored yet', 'shortcode-to-blocks')
+        ),
+        vcCount !== null && el(
+          'li',
+          null,
+          sprintf(
+            __('Shortcodes found: %d', 'shortcode-to-blocks'),
+            vcCount
+          )
+        )
+      ),
+
+      el(
+        'div',
+        { className: 'stb-actions', style: { display: 'flex', gap: '8px', marginBottom: '4px' } },
+        hasVC && el(
+          Button,
+          {
+            variant: 'primary',
+            onClick: function () { convertOrRevert('convert', setBusy, setNotice); },
+            disabled: busy,
           },
-          disabled: busy,
-        }, busy ? el(Spinner, null) : 'Revert to backup')
+          busy ? el(Spinner, null) : __('Convert to blocks', 'shortcode-to-blocks')
+        ),
+
+        hasBackup && el(
+          Button,
+          {
+            variant: 'secondary',
+            isDestructive: true,
+            onClick: function () {
+              if (window.confirm(__('Revert to original WPBakery content?', 'shortcode-to-blocks'))) {
+                convertOrRevert('revert', setBusy, setNotice);
+              }
+            },
+            disabled: busy,
+          },
+          busy ? el(Spinner, null) : __('Revert to backup', 'shortcode-to-blocks')
+        )
       ),
 
-      !isPro && el('p', { className: 'components-help', style: { marginTop: 8, fontStyle: 'italic' } },
-        el('a', { href: 'https://www.jonathanchawkins.com/shortcode-to-blocks-pro/', target: '_blank', rel: 'noopener' }, 'Upgrade to Pro'),
-        ' for batch conversion, advanced shortcodes, logs & more.'
+      !isPro && el(
+        'p',
+        { className: 'components-help', style: { marginTop: 8, fontStyle: 'italic' } },
+        el(
+          'a',
+          {
+            href: 'https://www.jonathanchawkins.com/shortcode-to-blocks-pro/',
+            target: '_blank',
+            rel: 'noopener'
+          },
+          __('Upgrade to Pro', 'shortcode-to-blocks')
+        ),
+        __(' for batch conversion, advanced shortcodes, logs & more.', 'shortcode-to-blocks')
       )
     );
   };
@@ -101,6 +170,8 @@
 /* ===== Post status row ===== */
 (function (wp) {
   if (!wp || !wp.editPost || !wp.plugins) return;
+
+  const { __ } = wp.i18n;
 
   var el = wp.element.createElement;
   var registerPlugin = wp.plugins.registerPlugin;
@@ -133,18 +204,36 @@
             window.location.reload();
           } else if (wp.data && wp.data.dispatch) {
             wp.data.dispatch('core/notices').createNotice(
-              'error', (res && res.data) ? String(res.data) : 'Action failed', { type: 'snackbar' }
+              'error',
+              (res && res.data) ? String(res.data) : __('Action failed', 'shortcode-to-blocks'),
+              { type: 'snackbar' }
             );
           }
         })
         .finally(function () { setBusy(false); });
     }
 
-    return el(PluginPostStatusInfo, { className: 'stb-status' },
-      el('strong', null, hasVC ? 'WPBakery content detected' : 'Backup available'),
-      el('div', { style: { marginTop: 6 } },
-        el(Button, { variant: 'secondary', onClick: function () { run(mode); }, disabled: busy },
-          busy ? el(Spinner, null) : (mode === 'convert' ? 'Convert now' : 'Revert to backup')
+    return el(
+      PluginPostStatusInfo,
+      { className: 'stb-status' },
+      el(
+        'strong',
+        null,
+        hasVC
+          ? __('WPBakery content detected', 'shortcode-to-blocks')
+          : __('Backup available', 'shortcode-to-blocks')
+      ),
+      el(
+        'div',
+        { style: { marginTop: 6 } },
+        el(
+          Button,
+          { variant: 'secondary', onClick: function () { run(mode); }, disabled: busy },
+          busy
+            ? el(Spinner, null)
+            : (mode === 'convert'
+              ? __('Convert now', 'shortcode-to-blocks')
+              : __('Revert to backup', 'shortcode-to-blocks'))
         )
       )
     );

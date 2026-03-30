@@ -462,11 +462,7 @@ class Converter {
         if ($decoded === false) return '';
         $decoded = urldecode($decoded);
 
-        return <<<HTML
-        <!-- wp:html -->
-        {$decoded}
-        <!-- /wp:html -->
-        HTML;
+        return "<!-- wp:html -->\n" . $decoded . "\n<!-- /wp:html -->";
     }
 
     // [vc_empty_space]
@@ -480,11 +476,9 @@ class Converter {
         } elseif (preg_match('/^(\d+)%$/', $height)) {
             $px = 40;
         }
-        return <<<HTML
-    <!-- wp:spacer {"height":{$px}} -->
-    <div style="height:{$px}px" aria-hidden="true" class="wp-block-spacer"></div>
-    <!-- /wp:spacer -->
-    HTML;
+        return '<!-- wp:spacer {"height":' . $px . '} -->' . "\n"
+            . '<div style="height:' . $px . 'px" aria-hidden="true" class="wp-block-spacer"></div>' . "\n"
+            . '<!-- /wp:spacer -->';
     }
 
     // [vc_single_image]
@@ -555,11 +549,9 @@ class Converter {
                 $img_tag = '<a href="' . esc_url($link_href) . '">' . $img_tag . '</a>';
             }
 
-            return <<<HTML
-    <!-- wp:image {$json} -->
-    <figure class="{$figure_class}">{$img_tag}</figure>
-    <!-- /wp:image -->
-    HTML;
+            return "<!-- wp:image {$json} -->\n"
+                . '<figure class="' . $figure_class . '">' . $img_tag . '</figure>' . "\n"
+                . '<!-- /wp:image -->';
         } else {
             $block = [
                 'url'             => $img_url,
@@ -571,11 +563,9 @@ class Converter {
                 $img_tag = '<a href="' . esc_url($link_href) . '">' . $img_tag . '</a>';
             }
 
-            return <<<HTML
-    <!-- wp:image {$json} -->
-    <figure class="wp-block-image">{$img_tag}</figure>
-    <!-- /wp:image -->
-    HTML;
+            return "<!-- wp:image {$json} -->\n"
+                . '<figure class="wp-block-image">' . $img_tag . '</figure>' . "\n"
+                . '<!-- /wp:image -->';
         }
     }
 
@@ -586,11 +576,9 @@ class Converter {
         $level = in_array($level, [1,2,3,4,5,6], true) ? $level : 2;
         $text  = esc_html(wp_strip_all_tags($text));
         if ($text === '') return '';
-        return <<<HTML
-    <!-- wp:heading {"level":$level} -->
-    <h$level>$text</h$level>
-    <!-- /wp:heading -->
-    HTML;
+        return '<!-- wp:heading {"level":' . $level . '} -->' . "\n"
+            . '<h' . $level . '>' . $text . '</h' . $level . '>' . "\n"
+            . '<!-- /wp:heading -->';
     }
 
     // [vc_separator]
@@ -931,10 +919,8 @@ class Converter {
             $note_html = "\n\n<!-- wp:paragraph -->\n<p><em>" . esc_html($note) . "</em></p>\n<!-- /wp:paragraph -->";
         }
 
-        return <<<HTML
-    <!-- wp:shortcode -->
-    {$shortcode}
-    <!-- /wp:shortcode -->{$note_html}
-    HTML;
+        return "<!-- wp:shortcode -->\n"
+            . $shortcode . "\n"
+            . '<!-- /wp:shortcode -->' . $note_html;
     }
 }

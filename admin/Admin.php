@@ -45,6 +45,7 @@ class Admin {
         if ($hook !== 'post.php' && $hook !== 'post-new.php') return;
         $screen = get_current_screen();
         if (! $screen || ! in_array($screen->post_type, self::allowed_post_types(), true)) return;
+        if (! current_user_can(Settings::required_capability())) return;
         $is_block = method_exists($screen, 'is_block_editor') && $screen->is_block_editor();
 
         if ($is_block) {
@@ -53,20 +54,30 @@ class Admin {
             wp_enqueue_script(
                 'stb-editor-ui',
                 STB_URL . $rel_ui,
-                ['wp-plugins','wp-edit-post','wp-element','wp-components','wp-data','wp-api-fetch','wp-notices','wp-core-data','wp-block-editor'],
+                ['wp-plugins','wp-edit-post','wp-element','wp-components','wp-data','wp-api-fetch','wp-notices','wp-core-data','wp-block-editor', 'wp-i18n'],
                 $ver_ui,
                 true
+            );
+            wp_set_script_translations(
+                'stb-editor-ui',
+                'shortcode-to-blocks',
+                STB_PATH . 'languages'
             );
             $boot_handle = 'stb-editor-ui';
         } else {
             $rel = 'assets/js/converter.js';
             $ver = file_exists(STB_PATH . $rel) ? filemtime(STB_PATH . $rel) : STB_VERSION;
-            wp_register_script('stb-admin', STB_URL . $rel, ['jquery'], $ver, true);
+            wp_register_script('stb-admin', STB_URL . $rel, ['jquery', 'wp-i18n'], $ver, true);
             wp_localize_script('stb-admin', 'stbConvert', [
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce'   => wp_create_nonce('stb_convert_nonce'),
             ]);
             wp_enqueue_script('stb-admin');
+            wp_set_script_translations(
+                'stb-admin',
+                'shortcode-to-blocks',
+                STB_PATH . 'languages'
+            );
             $boot_handle = 'stb-admin';
         }
 
@@ -100,6 +111,7 @@ class Admin {
     }
 
     public function add_metabox() {
+        if (! current_user_can(Settings::required_capability())) return;
         if (self::is_block_editor_screen()) return;
         foreach (self::allowed_post_types() as $type) {
             add_meta_box('stb_box', __('Convert Shortcodes to Blocks', 'shortcode-to-blocks'), [$this, 'render_metabox'], $type, 'side');
@@ -107,6 +119,7 @@ class Admin {
     }
 
     public function render_metabox(\WP_Post $post) {
+        if (! current_user_can(Settings::required_capability())) return;
         echo '<button type="button" class="button button-primary" id="stb-convert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
         if (get_post_meta($post->ID, '_stbp_original_content', true)) {
             echo ' <button type="button" class="button" id="stb-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert', 'shortcode-to-blocks') . '</button>';
@@ -134,8 +147,8 @@ class Admin {
         // Allow Pro to add tabs
         $pages = apply_filters('stb_admin_tabs', $pages, $base_slug);
 
-        if ($active === '' && isset($_GET['page'])) {
-            $active = sanitize_key((string) $_GET['page']);
+        if ($active === '' && isset($_GET['page'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- menu page slug, no data processing
+            $active = sanitize_key((string) $_GET['page']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
 
         echo '<div class="wrap">';

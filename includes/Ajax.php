@@ -3,6 +3,7 @@ namespace STB\includes;
 
 use STB\admin\Admin;
 use STB\core\Detector;
+use STB\admin\Settings;
 
 defined('ABSPATH') || exit;
 
@@ -35,8 +36,8 @@ class Ajax {
             wp_send_json_error('cannot process autosave/revision', 400);
         }
 
-        if (! current_user_can('edit_post', $post_id)) {
-            wp_send_json_error('insufficient permissions', 403);
+        if ( ! current_user_can( Settings::required_capability() ) || ! current_user_can( 'edit_post', $post_id ) ) {
+            wp_send_json_error('Insufficient permissions.', 403 );
         }
 
         return $post_id;
@@ -87,7 +88,10 @@ class Ajax {
         } catch (\Throwable $e) {
             do_action('stb_convert_error', $post_id, $e->getMessage());
             delete_transient('stbp_dash_counts');
-            wp_send_json_error('conversion error: ' . $e->getMessage(), 500);
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( '[STB] Conversion error: ' . $e->getMessage() );
+            }
+            wp_send_json_error('Conversion failed. Please review the content and try again.', 500 );
         }
     }
 
