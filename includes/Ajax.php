@@ -60,10 +60,20 @@ class Ajax {
         }
 
         try {
-            // Use filterable converter class so Pro can substitute its own
-            $converter_class = apply_filters('stb_converter_class', '\\STB\\core\\Converter');
-            $converter       = new $converter_class();
-            $converted       = $converter->convert_vc_shortcodes_recursive($post->post_content);
+            // Use filterable converter class so Pro can substitute its own.
+            $default_converter = '\\STB\\core\\Converter';
+            $converter_class   = apply_filters('stb_converter_class', $default_converter);
+
+            if (! is_string($converter_class) || ! class_exists($converter_class)) {
+                $converter_class = $default_converter;
+            }
+
+            $converter = new $converter_class();
+            if (! method_exists($converter, 'convert_vc_shortcodes_recursive')) {
+                throw new \RuntimeException('Invalid converter implementation.');
+            }
+
+            $converted = $converter->convert_vc_shortcodes_recursive($post->post_content);
 
             if ($converted !== $post->post_content) {
                 $tpl  = $this->get_current_template_slug($post_id);
@@ -88,9 +98,6 @@ class Ajax {
         } catch (\Throwable $e) {
             do_action('stb_convert_error', $post_id, $e->getMessage());
             delete_transient('stbp_dash_counts');
-            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                error_log( '[STB] Conversion error: ' . $e->getMessage() );
-            }
             wp_send_json_error('Conversion failed. Please review the content and try again.', 500 );
         }
     }

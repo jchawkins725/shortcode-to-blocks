@@ -3,16 +3,22 @@ defined('ABSPATH') || exit;
 
 $opts       = \STB\admin\Settings::get();
 $post_types = $opts['post_types'] ?? ['post', 'page'];
-// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Dashboard stat only, not performance critical
+// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Dashboard summary query against plugin-managed backup meta.
 $backed_query = new WP_Query([
-    'post_type'      => $post_types,
-    'post_status'    => 'publish',
-    'meta_key'       => '_stbp_original_content',
-    'meta_value'     => '',
-    'meta_compare'   => '!=',
-    'posts_per_page' => 1,
-    'fields'         => 'ids',
+    'post_type'              => $post_types,
+    'post_status'            => 'publish',
+    'meta_query'             => [
+        [
+            'key'     => '_stbp_original_content',
+            'compare' => 'EXISTS',
+        ],
+    ],
+    'posts_per_page'         => 1,
+    'fields'                 => 'ids',
+    'update_post_meta_cache' => false,
+    'update_post_term_cache' => false,
 ]);
+// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 $total_backed = (int) $backed_query->found_posts;
 
 $is_pro = defined('STBP_VERSION');
