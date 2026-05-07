@@ -1,5 +1,5 @@
 <?php
-namespace STB\admin;
+namespace STBC\admin;
 
 defined('ABSPATH') || exit;
 
@@ -12,21 +12,21 @@ class Settings {
             'row_width'                => 'content',
             'retain_data_on_uninstall' => true,
         ];
-        return apply_filters('stb_settings_defaults', $defaults);
+        return apply_filters('stbc_settings_defaults', $defaults);
     }
 
     public static function get(): array {
-        return wp_parse_args(get_option('stb_options', []), self::defaults());
+        return wp_parse_args(get_option('stbc_options', []), self::defaults());
     }
 
     public static function required_capability(): string {
         $o   = self::get();
         $cap = $o['required_cap'] ?: 'edit_others_posts';
-        return apply_filters('stb_required_capability', $cap, $o);
+        return apply_filters('stbc_required_capability', $cap, $o);
     }
 
     public static function tools_capability() {
-        return apply_filters('stb_tools_capability', 'manage_options');
+        return apply_filters('stbc_tools_capability', 'manage_options');
     }
 
     public function init() {
@@ -34,26 +34,26 @@ class Settings {
     }
 
     public function register() {
-        register_setting('stb_settings', 'stb_options', [
+        register_setting('stbc_settings', 'stbc_options', [
             'type'              => 'array',
             'sanitize_callback' => [self::class, 'sanitize'],
         ]);
 
-        $page = STB_SLUG . '-settings';
+        $page = STBC_SLUG . '-settings';
 
-        add_settings_section('stb_general', __('General', 'shortcode-to-blocks'), '__return_false', $page);
-        add_settings_section('stb_uninstall', __('Uninstall', 'shortcode-to-blocks'), function () {
+        add_settings_section('stbc_general', __('General', 'shortcode-to-blocks'), '__return_false', $page);
+        add_settings_section('stbc_uninstall', __('Uninstall', 'shortcode-to-blocks'), function () {
             echo '<p>' . esc_html__('Choose what happens to plugin data when the plugin is deleted.', 'shortcode-to-blocks') . '</p>';
         }, $page);
 
-        add_settings_field('post_types', __('Post types', 'shortcode-to-blocks'), [self::class, 'field_post_types'], $page, 'stb_general');
-        add_settings_field('required_cap', __('Required capability', 'shortcode-to-blocks'), [self::class, 'field_required_cap'], $page, 'stb_general');
-        add_settings_field('row_width', __('Default row width', 'shortcode-to-blocks'), [self::class, 'field_row_width'], $page, 'stb_general');
+        add_settings_field('post_types', __('Post types', 'shortcode-to-blocks'), [self::class, 'field_post_types'], $page, 'stbc_general');
+        add_settings_field('required_cap', __('Required capability', 'shortcode-to-blocks'), [self::class, 'field_required_cap'], $page, 'stbc_general');
+        add_settings_field('row_width', __('Default row width', 'shortcode-to-blocks'), [self::class, 'field_row_width'], $page, 'stbc_general');
 
-        add_settings_field('retain_data_on_uninstall', __('Keep data on uninstall', 'shortcode-to-blocks'), [self::class, 'field_retain_data'], $page, 'stb_uninstall');
+        add_settings_field('retain_data_on_uninstall', __('Keep data on uninstall', 'shortcode-to-blocks'), [self::class, 'field_retain_data'], $page, 'stbc_uninstall');
 
         // Allow Pro to add settings sections/fields
-        do_action('stb_register_settings', $page);
+        do_action('stbc_register_settings', $page);
     }
 
     public static function sanitize($in) {
@@ -71,10 +71,10 @@ class Settings {
 
         $retain = !empty($in['retain_data_on_uninstall']);
         $out['retain_data_on_uninstall'] = $retain;
-        update_option('stb_retain_data_on_uninstall', $retain);
+        update_option('stbc_retain_data_on_uninstall', $retain);
 
         // Allow Pro to sanitize additional fields
-        $out = apply_filters('stb_settings_sanitize', $out, $in);
+        $out = apply_filters('stbc_settings_sanitize', $out, $in);
 
         return $out;
     }
@@ -84,7 +84,7 @@ class Settings {
         $all  = get_post_types(['public' => true], 'objects');
         foreach ($all as $name => $obj) {
             printf(
-                '<label style="display:block"><input type="checkbox" name="stb_options[post_types][]" value="%s" %s> %s</label>',
+                '<label style="display:block"><input type="checkbox" name="stbc_options[post_types][]" value="%s" %s> %s</label>',
                 esc_attr($name),
                 checked(in_array($name, $opts['post_types'], true), true, false),
                 esc_html($obj->labels->name)
@@ -100,7 +100,7 @@ class Settings {
             'edit_others_posts' => __('Editors or above', 'shortcode-to-blocks'),
             'edit_posts'        => __('Authors or above', 'shortcode-to-blocks'),
         ];
-        echo '<select name="stb_options[required_cap]">';
+        echo '<select name="stbc_options[required_cap]">';
         foreach ($choices as $cap => $label) {
             printf('<option value="%s" %s>%s</option>', esc_attr($cap), selected($opts['required_cap'], $cap, false), esc_html($label));
         }
@@ -118,7 +118,7 @@ class Settings {
 
         foreach ($choices as $value => $label) {
             printf(
-                '<label style="display:block"><input type="radio" name="stb_options[row_width]" value="%s" %s> %s</label>',
+                '<label style="display:block"><input type="radio" name="stbc_options[row_width]" value="%s" %s> %s</label>',
                 esc_attr($value),
                 checked($current, $value, false),
                 esc_html($label)
@@ -132,18 +132,18 @@ class Settings {
         $opts  = self::get();
         $value = !empty($opts['retain_data_on_uninstall']);
         printf(
-            '<label><input type="checkbox" name="stb_options[retain_data_on_uninstall]" value="1" %s> %s</label>',
+            '<label><input type="checkbox" name="stbc_options[retain_data_on_uninstall]" value="1" %s> %s</label>',
             checked($value, true, false),
             esc_html__('Keep settings and post meta when uninstalling the plugin.', 'shortcode-to-blocks')
         );
     }
 
     public static function render_settings_page() {
-        Admin::render_tabs((defined('STB_SLUG') ? STB_SLUG : 'shortcode-to-blocks') . '-settings');
+        Admin::render_tabs((defined('STBC_SLUG') ? STBC_SLUG : 'shortcode-to-blocks') . '-settings');
         echo '<div class="wrap"><h1>' . esc_html__('Settings', 'shortcode-to-blocks') . '</h1>';
         echo '<form method="post" action="options.php">';
-        settings_fields('stb_settings');
-        do_settings_sections(STB_SLUG . '-settings');
+        settings_fields('stbc_settings');
+        do_settings_sections(STBC_SLUG . '-settings');
         submit_button();
         echo '</form></div>';
     }

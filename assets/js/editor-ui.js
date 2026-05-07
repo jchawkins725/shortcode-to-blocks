@@ -13,15 +13,15 @@
   var useState = wp.element.useState;
   var select = wp.data.select;
 
-  var BOOT = window.STB_BOOT || {};
+  var BOOT = window.STBC_BOOT || {};
 
   function convertOrRevert(action, setBusy, setNotice) {
     setBusy(true);
     var id = select('core/editor').getCurrentPostId();
     var form = new FormData();
-    form.append('action', action === 'convert' ? 'stb_convert' : 'stb_revert');
+    form.append('action', action === 'convert' ? 'stbc_convert' : 'stbc_revert');
     form.append('post_id', id);
-    form.append('stb_convert_nonce_field', BOOT.nonce || '');
+    form.append('stbc_convert_nonce_field', BOOT.nonce || '');
 
     fetch(BOOT.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: form })
       .then(function (r) { return r.json(); })
@@ -70,9 +70,9 @@
     return el(
       PluginDocumentSettingPanel,
       {
-        name: 'stb-panel',
+        name: 'stbc-panel',
         title: __('Shortcode → Blocks', 'shortcode-to-blocks'),
-        className: 'stb-panel'
+        className: 'stbc-panel'
       },
 
       notice && el(
@@ -93,7 +93,7 @@
 
       el(
         'ul',
-        { className: 'stb-summary', style: { margin: '0 0 12px', paddingLeft: '18px' } },
+        { className: 'stbc-summary', style: { margin: '0 0 12px', paddingLeft: '18px' } },
         el(
           'li',
           null,
@@ -121,7 +121,7 @@
 
       el(
         'div',
-        { className: 'stb-actions', style: { display: 'flex', gap: '8px', marginBottom: '4px' } },
+        { className: 'stbc-actions', style: { display: 'flex', gap: '8px', marginBottom: '4px' } },
         hasVC && el(
           Button,
           {
@@ -165,7 +165,7 @@
     );
   };
 
-  registerPlugin('stb-panel', { render: Panel });
+  registerPlugin('stbc-panel', { render: Panel });
 })(window.wp);
 
 /* ===== Post status row ===== */
@@ -181,7 +181,7 @@
   var Spinner = wp.components.Spinner;
   var useState = wp.element.useState;
   var select = wp.data.select;
-  var BOOT = window.STB_BOOT || {};
+  var BOOT = window.STBC_BOOT || {};
 
   var StatusInfo = function () {
     var _use = useState(false), busy = _use[0], setBusy = _use[1];
@@ -194,9 +194,9 @@
       setBusy(true);
       var id = select('core/editor').getCurrentPostId();
       var form = new FormData();
-      form.append('action', m === 'convert' ? 'stb_convert' : 'stb_revert');
+      form.append('action', m === 'convert' ? 'stbc_convert' : 'stbc_revert');
       form.append('post_id', id);
-      form.append('stb_convert_nonce_field', BOOT.nonce || '');
+      form.append('stbc_convert_nonce_field', BOOT.nonce || '');
 
       fetch(BOOT.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: form })
         .then(function (r) { return r.json(); })
@@ -216,7 +216,7 @@
 
     return el(
       PluginPostStatusInfo,
-      { className: 'stb-status' },
+      { className: 'stbc-status' },
       el(
         'strong',
         null,
@@ -240,5 +240,5 @@
     );
   };
 
-  registerPlugin('stb-status', { render: StatusInfo });
+  registerPlugin('stbc-status', { render: StatusInfo });
 })(window.wp);

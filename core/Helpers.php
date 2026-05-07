@@ -1,5 +1,5 @@
 <?php
-namespace STB\core;
+namespace STBC\core;
 
 defined('ABSPATH') || exit;
 
@@ -8,7 +8,7 @@ class Helpers {
         if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
             if (function_exists('wp_trigger_error')) {
                 wp_trigger_error(
-                    '[stb][' . $level . ']',
+                    '[stbc][' . $level . ']',
                     is_string($message) ? $message : wp_json_encode($message),
                     E_USER_NOTICE
                 );

@@ -1,23 +1,23 @@
 <?php
-namespace STB\includes;
+namespace STBC\includes;
 
-use STB\admin\Admin;
-use STB\core\Detector;
-use STB\admin\Settings;
+use STBC\admin\Admin;
+use STBC\core\Detector;
+use STBC\admin\Settings;
 
 defined('ABSPATH') || exit;
 
 class Ajax {
 
     public function init() {
-        add_action('wp_ajax_stb_convert', [$this, 'convert']);
-        add_action('wp_ajax_stb_revert',  [$this, 'revert']);
+        add_action('wp_ajax_stbc_convert', [$this, 'convert']);
+        add_action('wp_ajax_stbc_revert',  [$this, 'revert']);
     }
 
     private function validate_request(): int {
         if (
-            ! isset($_POST['stb_convert_nonce_field']) ||
-            ! check_ajax_referer('stb_convert_nonce', 'stb_convert_nonce_field', false)
+            ! isset($_POST['stbc_convert_nonce_field']) ||
+            ! check_ajax_referer('stbc_convert_nonce', 'stbc_convert_nonce_field', false)
         ) {
             wp_send_json_error('invalid or missing nonce', 403);
         }
@@ -61,8 +61,8 @@ class Ajax {
 
         try {
             // Use filterable converter class so Pro can substitute its own.
-            $default_converter = '\\STB\\core\\Converter';
-            $converter_class   = apply_filters('stb_converter_class', $default_converter);
+            $default_converter = '\\STBC\\core\\Converter';
+            $converter_class   = apply_filters('stbc_converter_class', $default_converter);
 
             if (! is_string($converter_class) || ! class_exists($converter_class)) {
                 $converter_class = $default_converter;
@@ -90,13 +90,13 @@ class Ajax {
             }
 
             // Allow Pro to log the conversion
-            do_action('stb_post_converted', $post_id);
+            do_action('stbc_post_converted', $post_id);
 
             delete_transient('stbp_dash_counts');
             wp_send_json_success(['message' => 'content converted'], 200);
 
         } catch (\Throwable $e) {
-            do_action('stb_convert_error', $post_id, $e->getMessage());
+            do_action('stbc_convert_error', $post_id, $e->getMessage());
             delete_transient('stbp_dash_counts');
             wp_send_json_error('Conversion failed. Please review the content and try again.', 500 );
         }
@@ -131,7 +131,7 @@ class Ajax {
         $post = get_post($post_id);
         Detector::flag_post($post_id, (string) $post->post_content);
 
-        do_action('stb_post_reverted', $post_id);
+        do_action('stbc_post_reverted', $post_id);
 
         delete_transient('stbp_dash_counts');
         wp_send_json_success(['message' => 'content reverted'], 200);

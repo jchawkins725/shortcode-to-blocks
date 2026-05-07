@@ -1,5 +1,5 @@
 <?php
-namespace STB\admin;
+namespace STBC\admin;
 
 defined('ABSPATH') || exit;
 
@@ -18,7 +18,7 @@ class Admin {
         if (empty($types)) {
             $types = ['post', 'page'];
         }
-        return apply_filters('stb_allowed_post_types', $types, $opts);
+        return apply_filters('stbc_allowed_post_types', $types, $opts);
     }
 
     public function register_menu() {
@@ -28,17 +28,17 @@ class Admin {
             __('Shortcode → Blocks', 'shortcode-to-blocks'),
             __('Shortcode → Blocks', 'shortcode-to-blocks'),
             $cap,
-            STB_SLUG,
+            STBC_SLUG,
             [$this, 'render_dashboard'],
-            'data:image/svg+xml;base64,' . base64_encode( file_get_contents( STB_PATH . 'assets/icon.svg' ) ),
+            'data:image/svg+xml;base64,' . base64_encode( file_get_contents( STBC_PATH . 'assets/icon.svg' ) ),
             58
         );
 
-        add_submenu_page(STB_SLUG, __('Dashboard', 'shortcode-to-blocks'), __('Dashboard', 'shortcode-to-blocks'), $cap, STB_SLUG, [$this, 'render_dashboard']);
-        add_submenu_page(STB_SLUG, __('Settings', 'shortcode-to-blocks'), __('Settings', 'shortcode-to-blocks'), 'manage_options', STB_SLUG . '-settings', [Settings::class, 'render_settings_page']);
+        add_submenu_page(STBC_SLUG, __('Dashboard', 'shortcode-to-blocks'), __('Dashboard', 'shortcode-to-blocks'), $cap, STBC_SLUG, [$this, 'render_dashboard']);
+        add_submenu_page(STBC_SLUG, __('Settings', 'shortcode-to-blocks'), __('Settings', 'shortcode-to-blocks'), 'manage_options', STBC_SLUG . '-settings', [Settings::class, 'render_settings_page']);
 
         // Allow Pro to register additional menu pages
-        do_action('stb_register_admin_menus', STB_SLUG, $cap);
+        do_action('stbc_register_admin_menus', STBC_SLUG, $cap);
     }
 
     public function enqueue($hook) {
@@ -50,48 +50,48 @@ class Admin {
 
         if ($is_block) {
             $rel_ui = 'assets/js/editor-ui.js';
-            $ver_ui = file_exists(STB_PATH . $rel_ui) ? filemtime(STB_PATH . $rel_ui) : STB_VERSION;
+            $ver_ui = file_exists(STBC_PATH . $rel_ui) ? filemtime(STBC_PATH . $rel_ui) : STBC_VERSION;
             wp_enqueue_script(
-                'stb-editor-ui',
-                STB_URL . $rel_ui,
+                'stbc-editor-ui',
+                STBC_URL . $rel_ui,
                 ['wp-plugins','wp-edit-post','wp-element','wp-components','wp-data','wp-api-fetch','wp-notices','wp-core-data','wp-block-editor', 'wp-i18n'],
                 $ver_ui,
                 true
             );
             wp_set_script_translations(
-                'stb-editor-ui',
+                'stbc-editor-ui',
                 'shortcode-to-blocks',
-                STB_PATH . 'languages'
+                STBC_PATH . 'languages'
             );
-            $boot_handle = 'stb-editor-ui';
+            $boot_handle = 'stbc-editor-ui';
         } else {
             $rel = 'assets/js/converter.js';
-            $ver = file_exists(STB_PATH . $rel) ? filemtime(STB_PATH . $rel) : STB_VERSION;
-            wp_register_script('stb-admin', STB_URL . $rel, ['jquery', 'wp-i18n'], $ver, true);
-            wp_localize_script('stb-admin', 'stbConvert', [
+            $ver = file_exists(STBC_PATH . $rel) ? filemtime(STBC_PATH . $rel) : STBC_VERSION;
+            wp_register_script('stbc-admin', STBC_URL . $rel, ['jquery', 'wp-i18n'], $ver, true);
+            wp_localize_script('stbc-admin', 'stbcConvert', [
                 'ajaxUrl'     => admin_url('admin-ajax.php'),
-                'nonce'       => wp_create_nonce('stb_convert_nonce'),
+                'nonce'       => wp_create_nonce('stbc_convert_nonce'),
                 'editUrlBase' => admin_url('post.php?post='),
             ]);
-            wp_enqueue_script('stb-admin');
+            wp_enqueue_script('stbc-admin');
             wp_set_script_translations(
-                'stb-admin',
+                'stbc-admin',
                 'shortcode-to-blocks',
-                STB_PATH . 'languages'
+                STBC_PATH . 'languages'
             );
-            $boot_handle = 'stb-admin';
+            $boot_handle = 'stbc-admin';
         }
 
         global $post;
         $has_backup = $post ? (bool) get_post_meta($post->ID, '_stbp_original_content', true) : false;
-        $has_vc     = $post ? \STB\core\Detector::has_vc((string) $post->post_content) : false;
+        $has_vc     = $post ? \STBC\core\Detector::has_vc((string) $post->post_content) : false;
         $is_pro     = defined('STBP_VERSION');
 
         wp_add_inline_script(
             $boot_handle,
-            'window.STB_BOOT = ' . wp_json_encode([
+            'window.STBC_BOOT = ' . wp_json_encode([
                 'ajaxUrl'   => admin_url('admin-ajax.php'),
-                'nonce'     => wp_create_nonce('stb_convert_nonce'),
+                'nonce'     => wp_create_nonce('stbc_convert_nonce'),
                 'hasBackup' => $has_backup,
                 'hasVC'     => $has_vc,
                 'isPro'     => $is_pro,
@@ -100,8 +100,8 @@ class Admin {
         );
 
         $css = 'assets/css/admin.css';
-        if (file_exists(STB_PATH . $css)) {
-            wp_enqueue_style('stb-admin', STB_URL . $css, [], filemtime(STB_PATH . $css));
+        if (file_exists(STBC_PATH . $css)) {
+            wp_enqueue_style('stbc-admin', STBC_URL . $css, [], filemtime(STBC_PATH . $css));
         }
     }
 
@@ -115,23 +115,23 @@ class Admin {
         if (! current_user_can(Settings::required_capability())) return;
         if (self::is_block_editor_screen()) return;
         foreach (self::allowed_post_types() as $type) {
-            add_meta_box('stb_box', __('Convert Shortcodes to Blocks', 'shortcode-to-blocks'), [$this, 'render_metabox'], $type, 'side');
+            add_meta_box('stbc_box', __('Convert Shortcodes to Blocks', 'shortcode-to-blocks'), [$this, 'render_metabox'], $type, 'side');
         }
     }
 
     public function render_metabox(\WP_Post $post) {
         if (! current_user_can(Settings::required_capability())) return;
         $edit_url = admin_url('post.php?post=' . (int) $post->ID . '&action=edit&classic-editor__forget');
-        echo '<button type="button" class="button button-primary" id="stb-convert-button" data-post-id="' . esc_attr($post->ID) . '" data-edit-url="' . esc_url($edit_url) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
+        echo '<button type="button" class="button button-primary" id="stbc-convert-button" data-post-id="' . esc_attr($post->ID) . '" data-edit-url="' . esc_url($edit_url) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
         if (get_post_meta($post->ID, '_stbp_original_content', true)) {
-            echo ' <button type="button" class="button" id="stb-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert', 'shortcode-to-blocks') . '</button>';
+            echo ' <button type="button" class="button" id="stbc-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert', 'shortcode-to-blocks') . '</button>';
         }
-        wp_nonce_field('stb_convert_nonce', 'stb_convert_nonce_field');
+        wp_nonce_field('stbc_convert_nonce', 'stbc_convert_nonce_field');
     }
 
     public function render_dashboard() {
-        self::render_tabs(STB_SLUG);
-        $view = apply_filters('stb_dashboard_view', STB_PATH . 'admin/views/dashboard.php');
+        self::render_tabs(STBC_SLUG);
+        $view = apply_filters('stbc_dashboard_view', STBC_PATH . 'admin/views/dashboard.php');
         include $view;
     }
 
@@ -139,7 +139,7 @@ class Admin {
      * Render tabbed navigation. Pro hooks in via filter to add more tabs.
      */
     public static function render_tabs(string $active = ''): void {
-        $base_slug = defined('STB_SLUG') ? STB_SLUG : 'shortcode-to-blocks';
+        $base_slug = defined('STBC_SLUG') ? STBC_SLUG : 'shortcode-to-blocks';
 
         $pages = [
             $base_slug              => [__('Dashboard', 'shortcode-to-blocks'), admin_url('admin.php?page=' . $base_slug)],
@@ -147,15 +147,15 @@ class Admin {
         ];
 
         // Allow Pro to add tabs
-        $pages = apply_filters('stb_admin_tabs', $pages, $base_slug);
+        $pages = apply_filters('stbc_admin_tabs', $pages, $base_slug);
 
         if ($active === '' && isset($_GET['page'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- menu page slug, no data processing
             $active = sanitize_key((string) $_GET['page']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
 
         echo '<div class="wrap">';
-        echo '<h1 class="screen-reader-text">' . esc_html__('Shortcode to Blocks Converter', 'shortcode-to-blocks') . '</h1>';
-        echo '<h2 class="nav-tab-wrapper stb-nav-tabs" style="margin-top:12px;">';
+        echo '<h1 class="screen-reader-text">' . esc_html__('Shortcode to Blocks', 'shortcode-to-blocks') . '</h1>';
+        echo '<h2 class="nav-tab-wrapper stbc-nav-tabs" style="margin-top:12px;">';
 
         foreach ($pages as $slug => [$label, $url]) {
             $cssClass = ($slug === $active) ? 'nav-tab nav-tab-active' : 'nav-tab';

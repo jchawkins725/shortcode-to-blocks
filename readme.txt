@@ -1,4 +1,4 @@
-=== Shortcode to Blocks Converter ===
+=== Shortcode to Blocks ===
 Contributors: jchawkins725
 Tags: gutenberg, wpbakery, shortcode, converter, migration
 Requires at least: 6.0
@@ -12,7 +12,7 @@ Convert WPBakery Page Builder shortcodes to native Gutenberg blocks, one page at
 
 == Description ==
 
-Shortcode to Blocks Converter helps you migrate WPBakery Page Builder content to the native WordPress block editor.
+Shortcode to Blocks helps you migrate WPBakery Page Builder content to the native WordPress block editor.
 
 It converts the most common WPBakery Page Builder (Visual Composer) shortcodes into native WordPress blocks.
 

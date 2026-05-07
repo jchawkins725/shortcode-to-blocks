@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
     var $p = jQuery("<p>");
     $p.text(String(message || ""));
     $notice.append($p);
-    $("#stb-convert-button").closest(".postbox").prepend($notice);
+    $("#stbc-convert-button").closest(".postbox").prepend($notice);
     setTimeout(function () {
       $notice.fadeOut(300, function () {
         $notice.remove();
@@ -18,19 +18,19 @@ jQuery(document).ready(function ($) {
     }, 5000);
   }
 
-  $("#stb-convert-button").on("click", function () {
+  $("#stbc-convert-button").on("click", function () {
     var postId = $(this).data("post-id");
     var editUrl = String($(this).data("edit-url") || "");
     var $btn = $(this);
     $btn.attr("disabled", true).text(__("Converting...", "shortcode-to-blocks"));
 
     $.ajax({
-      url: stbConvert.ajaxUrl,
+      url: stbcConvert.ajaxUrl,
       type: "POST",
       data: {
-        action: "stb_convert",
+        action: "stbc_convert",
         post_id: postId,
-        stb_convert_nonce_field: stbConvert.nonce,
+        stbc_convert_nonce_field: stbcConvert.nonce,
       },
       success: function (response) {
         if (response.success) {
@@ -53,7 +53,7 @@ jQuery(document).ready(function ($) {
     });
   });
 
-  $("#stb-revert-button").on("click", function () {
+  $("#stbc-revert-button").on("click", function () {
     if (
       !confirm(
         __("Are you sure you want to revert to the original WPBakery content?", "shortcode-to-blocks")
@@ -67,12 +67,12 @@ jQuery(document).ready(function ($) {
     $btn.attr("disabled", true).text(__("Reverting...", "shortcode-to-blocks"));
 
     $.ajax({
-      url: stbConvert.ajaxUrl,
+      url: stbcConvert.ajaxUrl,
       type: "POST",
       data: {
-        action: "stb_revert",
+        action: "stbc_revert",
         post_id: postId,
-        stb_convert_nonce_field: stbConvert.nonce,
+        stbc_convert_nonce_field: stbcConvert.nonce,
       },
       success: function (response) {
         if (response.success) {

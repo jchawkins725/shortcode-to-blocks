@@ -1,7 +1,7 @@
 <?php
-namespace STB\core;
+namespace STBC\core;
 
-use STB\admin\Admin;
+use STBC\admin\Admin;
 
 defined('ABSPATH') || exit;
 

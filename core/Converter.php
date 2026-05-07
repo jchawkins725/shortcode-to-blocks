@@ -1,5 +1,5 @@
 <?php
-namespace STB\core;
+namespace STBC\core;
 
 defined('ABSPATH') || exit;
 
@@ -23,7 +23,7 @@ class Converter {
      * @return string[]
      */
     public function get_supported_shortcodes(): array {
-        return apply_filters('stb_supported_shortcodes', $this->basic_shortcodes);
+        return apply_filters('stbc_supported_shortcodes', $this->basic_shortcodes);
     }
 
     /**
@@ -145,7 +145,7 @@ class Converter {
         if (!empty($attrs['full_width']) && $attrs['full_width'] !== 'default') {
             return 'full';
         }
-        $options   = get_option('stb_options', []);
+        $options   = get_option('stbc_options', []);
         $row_width = is_array($options) ? ($options['row_width'] ?? 'content') : 'content';
         if (in_array($row_width, ['content', 'wide', 'full'], true)) {
             return $row_width;

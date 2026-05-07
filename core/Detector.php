@@ -1,5 +1,5 @@
 <?php
-namespace STB\core;
+namespace STBC\core;
 
 defined('ABSPATH') || exit;
 
