@@ -112,6 +112,7 @@
           'li',
           null,
           sprintf(
+            /* translators: %d: Number of WPBakery shortcodes detected in the content. */
             __('Shortcodes found: %d', 'shortcode-to-blocks'),
             vcCount
           )

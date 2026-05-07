@@ -3,166 +3,287 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Shortcode to Blocks Converter 1.0.0\n"
-"Report-Msgid-Bugs-To: https://www.jonathanchawkins.com/\n"
-"POT-Creation-Date: 2026-02-18T00:00:00+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/shortcode-to-blocks\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-07T01:53:36+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: shortcode-to-blocks\n"
 
 #. Plugin Name of the plugin
+#: shortcode-to-blocks.php
+#: admin/Admin.php:157
 msgid "Shortcode to Blocks Converter"
 msgstr ""
 
 #. Description of the plugin
+#: shortcode-to-blocks.php
 msgid "Convert WPBakery Page Builder content to native Gutenberg blocks. Basic single-post conversion for common shortcodes."
 msgstr ""
 
 #. Author of the plugin
+#: shortcode-to-blocks.php
 msgid "Jonathan Hawkins"
 msgstr ""
 
-#: shortcode-to-blocks.php:37
-msgid "Settings"
+#. Author URI of the plugin
+#: shortcode-to-blocks.php
+msgid "https://shortcodetoblocks.com/"
 msgstr ""
 
 #: admin/Admin.php:28
 #: admin/Admin.php:29
+#: assets/js/editor-ui.js:74
 msgid "Shortcode → Blocks"
 msgstr ""
 
 #: admin/Admin.php:37
-#: admin/Admin.php:129
+#: admin/Admin.php:145
 msgid "Dashboard"
 msgstr ""
 
-#: admin/Admin.php:105
+#: admin/Admin.php:38
+#: admin/Admin.php:146
+#: admin/Settings.php:143
+#: shortcode-to-blocks.php:37
+msgid "Settings"
+msgstr ""
+
+#: admin/Admin.php:118
 msgid "Convert Shortcodes to Blocks"
 msgstr ""
 
-#: admin/Admin.php:110
+#: admin/Admin.php:125
 msgid "Convert content"
 msgstr ""
 
-#: admin/Admin.php:112
+#: admin/Admin.php:127
+#: assets/js/converter.js:89
 msgid "Revert"
 msgstr ""
 
-#: admin/Admin.php:141
-msgid "Shortcode to Blocks Converter"
-msgstr ""
-
-#: admin/Settings.php:43
+#: admin/Settings.php:44
 msgid "General"
 msgstr ""
 
-#: admin/Settings.php:44
+#: admin/Settings.php:45
 msgid "Uninstall"
 msgstr ""
 
-#: admin/Settings.php:45
+#: admin/Settings.php:46
 msgid "Choose what happens to plugin data when the plugin is deleted."
 msgstr ""
 
-#: admin/Settings.php:48
+#: admin/Settings.php:49
 msgid "Post types"
 msgstr ""
 
-#: admin/Settings.php:49
+#: admin/Settings.php:50
 msgid "Required capability"
 msgstr ""
 
 #: admin/Settings.php:51
+msgid "Default row width"
+msgstr ""
+
+#: admin/Settings.php:53
 msgid "Keep data on uninstall"
 msgstr ""
 
-#: admin/Settings.php:88
+#: admin/Settings.php:93
 msgid "Select which post types show the Convert/Revert tools."
 msgstr ""
 
-#: admin/Settings.php:94
+#: admin/Settings.php:99
 msgid "Administrators"
 msgstr ""
 
-#: admin/Settings.php:95
+#: admin/Settings.php:100
 msgid "Editors or above"
 msgstr ""
 
-#: admin/Settings.php:96
+#: admin/Settings.php:101
 msgid "Authors or above"
 msgstr ""
 
-#: admin/Settings.php:111
+#: admin/Settings.php:114
+msgid "Content size"
+msgstr ""
+
+#: admin/Settings.php:115
+msgid "Wide size"
+msgstr ""
+
+#: admin/Settings.php:116
+msgid "Full width"
+msgstr ""
+
+#: admin/Settings.php:128
+msgid "Choose whether converted rows default to the theme content width, Gutenberg wide width, or full width. WPBakery rows explicitly marked full width will still convert to full width."
+msgstr ""
+
+#: admin/Settings.php:137
 msgid "Keep settings and post meta when uninstalling the plugin."
 msgstr ""
 
-#: admin/views/dashboard.php:36
+#: admin/views/dashboard.php:27
 msgid "Shortcode to Blocks — Dashboard"
 msgstr ""
 
-#: admin/views/dashboard.php:41
-msgid "Posts with WPBakery"
-msgstr ""
-
-#: admin/views/dashboard.php:45
+#: admin/views/dashboard.php:32
 msgid "Converted (with backup)"
 msgstr ""
 
-#: admin/views/dashboard.php:49
+#: admin/views/dashboard.php:42
 msgid "Selected Post Types"
 msgstr ""
 
-#: admin/views/dashboard.php:54
+#: admin/views/dashboard.php:47
 msgid "How to Convert"
 msgstr ""
 
-#: admin/views/dashboard.php:56
+#: admin/views/dashboard.php:49
 msgid "Open any post or page in the editor."
 msgstr ""
 
-#: admin/views/dashboard.php:57
+#: admin/views/dashboard.php:50
 msgid "In the sidebar, find the \"Shortcode → Blocks\" panel."
 msgstr ""
 
-#: admin/views/dashboard.php:58
+#: admin/views/dashboard.php:51
 msgid "Click \"Convert content\" to transform WPBakery shortcodes into Gutenberg blocks."
 msgstr ""
 
-#: admin/views/dashboard.php:59
+#: admin/views/dashboard.php:52
 msgid "If the result isn't right, click \"Revert\" to restore the original content."
 msgstr ""
 
-#: admin/views/dashboard.php:65
+#: admin/views/dashboard.php:58
+#: assets/js/editor-ui.js:161
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: admin/views/dashboard.php:66
+#: admin/views/dashboard.php:59
 msgid "The free version converts basic shortcodes one page at a time. Upgrade to Pro for:"
 msgstr ""
 
-#: admin/views/dashboard.php:68
+#: admin/views/dashboard.php:61
 msgid "Batch conversion — convert hundreds of pages at once"
 msgstr ""
 
-#: admin/views/dashboard.php:69
+#: admin/views/dashboard.php:62
 msgid "All 27+ WPBakery shortcode converters (galleries, tabs, accordions, CTAs, icons, video, and more)"
 msgstr ""
 
-#: admin/views/dashboard.php:70
+#: admin/views/dashboard.php:63
 msgid "Bulk actions in the Posts/Pages list"
 msgstr ""
 
-#: admin/views/dashboard.php:71
+#: admin/views/dashboard.php:64
 msgid "Activity logs and conversion history"
 msgstr ""
 
-#: admin/views/dashboard.php:72
+#: admin/views/dashboard.php:65
 msgid "Tools page with scanning, exporting, and backup management"
 msgstr ""
 
-#: admin/views/dashboard.php:76
+#: admin/views/dashboard.php:69
 msgid "Learn More About Pro"
+msgstr ""
+
+#: assets/js/converter.js:25
+msgid "Converting..."
+msgstr ""
+
+#: assets/js/converter.js:37
+msgid "Successfully converted to Gutenberg!"
+msgstr ""
+
+#: assets/js/converter.js:48
+#: assets/js/converter.js:86
+msgid "AJAX error, please try again."
+msgstr ""
+
+#: assets/js/converter.js:51
+msgid "Convert Content"
+msgstr ""
+
+#: assets/js/converter.js:59
+msgid "Are you sure you want to revert to the original WPBakery content?"
+msgstr ""
+
+#: assets/js/converter.js:67
+msgid "Reverting..."
+msgstr ""
+
+#: assets/js/converter.js:79
+msgid "Content reverted to WPBakery."
+msgstr ""
+
+#: assets/js/editor-ui.js:32
+msgid "Done."
+msgstr ""
+
+#: assets/js/editor-ui.js:38
+msgid "Request failed."
+msgstr ""
+
+#: assets/js/editor-ui.js:45
+msgid "Network error."
+msgstr ""
+
+#: assets/js/editor-ui.js:91
+msgid "Convert WPBakery shortcodes to native Gutenberg blocks."
+msgstr ""
+
+#: assets/js/editor-ui.js:101
+#: assets/js/editor-ui.js:224
+msgid "WPBakery content detected"
+msgstr ""
+
+#: assets/js/editor-ui.js:102
+msgid "No WPBakery shortcodes detected"
+msgstr ""
+
+#: assets/js/editor-ui.js:108
+#: assets/js/editor-ui.js:225
+msgid "Backup available"
+msgstr ""
+
+#: assets/js/editor-ui.js:109
+msgid "No backup stored yet"
+msgstr ""
+
+#. translators: %d: Number of WPBakery shortcodes detected in the content.
+#: assets/js/editor-ui.js:116
+msgid "Shortcodes found: %d"
+msgstr ""
+
+#: assets/js/editor-ui.js:132
+msgid "Convert to blocks"
+msgstr ""
+
+#: assets/js/editor-ui.js:141
+msgid "Revert to original WPBakery content?"
+msgstr ""
+
+#: assets/js/editor-ui.js:147
+#: assets/js/editor-ui.js:237
+msgid "Revert to backup"
+msgstr ""
+
+#: assets/js/editor-ui.js:163
+msgid " for batch conversion, advanced shortcodes, logs & more."
+msgstr ""
+
+#: assets/js/editor-ui.js:209
+msgid "Action failed"
+msgstr ""
+
+#: assets/js/editor-ui.js:236
+msgid "Convert now"
 msgstr ""
