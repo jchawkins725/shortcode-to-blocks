@@ -4,7 +4,7 @@
  * Description: Convert WPBakery Page Builder content to native Gutenberg blocks. Basic single-post conversion for common shortcodes.
  * Version: 1.0.0
  * Author: Jonathan Hawkins
- * Author URI: https://www.jonathanchawkins.com/
+ * Author URI: https://shortcodetoblocks.com/
  * License:     GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: shortcode-to-blocks

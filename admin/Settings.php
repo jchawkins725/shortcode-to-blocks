@@ -9,6 +9,7 @@ class Settings {
         $defaults = [
             'post_types'               => ['post', 'page'],
             'required_cap'             => 'edit_others_posts',
+            'row_width'                => 'content',
             'retain_data_on_uninstall' => true,
         ];
         return apply_filters('stb_settings_defaults', $defaults);
@@ -47,6 +48,7 @@ class Settings {
 
         add_settings_field('post_types', __('Post types', 'shortcode-to-blocks'), [self::class, 'field_post_types'], $page, 'stb_general');
         add_settings_field('required_cap', __('Required capability', 'shortcode-to-blocks'), [self::class, 'field_required_cap'], $page, 'stb_general');
+        add_settings_field('row_width', __('Default row width', 'shortcode-to-blocks'), [self::class, 'field_row_width'], $page, 'stb_general');
 
         add_settings_field('retain_data_on_uninstall', __('Keep data on uninstall', 'shortcode-to-blocks'), [self::class, 'field_retain_data'], $page, 'stb_uninstall');
 
@@ -63,6 +65,9 @@ class Settings {
 
         $caps = ['manage_options', 'edit_others_posts', 'edit_posts'];
         $out['required_cap'] = in_array(($in['required_cap'] ?? ''), $caps, true) ? $in['required_cap'] : 'edit_others_posts';
+
+        $row_width = isset($in['row_width']) ? sanitize_key($in['row_width']) : '';
+        $out['row_width'] = in_array($row_width, ['content', 'wide', 'full'], true) ? $row_width : 'content';
 
         $retain = !empty($in['retain_data_on_uninstall']);
         $out['retain_data_on_uninstall'] = $retain;
@@ -100,6 +105,27 @@ class Settings {
             printf('<option value="%s" %s>%s</option>', esc_attr($cap), selected($opts['required_cap'], $cap, false), esc_html($label));
         }
         echo '</select>';
+    }
+
+    public static function field_row_width() {
+        $opts    = self::get();
+        $current = isset($opts['row_width']) ? $opts['row_width'] : 'content';
+        $choices = [
+            'content' => __('Content size', 'shortcode-to-blocks'),
+            'wide'    => __('Wide size', 'shortcode-to-blocks'),
+            'full'    => __('Full width', 'shortcode-to-blocks'),
+        ];
+
+        foreach ($choices as $value => $label) {
+            printf(
+                '<label style="display:block"><input type="radio" name="stb_options[row_width]" value="%s" %s> %s</label>',
+                esc_attr($value),
+                checked($current, $value, false),
+                esc_html($label)
+            );
+        }
+
+        echo '<p class="description">' . esc_html__('Choose whether converted rows default to the theme content width, Gutenberg wide width, or full width. WPBakery rows explicitly marked full width will still convert to full width.', 'shortcode-to-blocks') . '</p>';
     }
 
     public static function field_retain_data() {

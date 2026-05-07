@@ -20,6 +20,7 @@ jQuery(document).ready(function ($) {
 
   $("#stb-convert-button").on("click", function () {
     var postId = $(this).data("post-id");
+    var editUrl = String($(this).data("edit-url") || "");
     var $btn = $(this);
     $btn.attr("disabled", true).text(__("Converting...", "shortcode-to-blocks"));
 
@@ -34,7 +35,11 @@ jQuery(document).ready(function ($) {
       success: function (response) {
         if (response.success) {
           showAdminNotice(__("Successfully converted to Gutenberg!", "shortcode-to-blocks"));
-          location.reload();
+          if (editUrl) {
+            window.location.assign(editUrl);
+          } else {
+            location.reload();
+          }
         } else {
           showAdminNotice(response.data, "error");
         }

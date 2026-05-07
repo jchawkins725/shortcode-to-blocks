@@ -30,7 +30,7 @@ class Admin {
             $cap,
             STB_SLUG,
             [$this, 'render_dashboard'],
-            'dashicons-randomize',
+            'data:image/svg+xml;base64,' . base64_encode( file_get_contents( STB_PATH . 'assets/icon.svg' ) ),
             58
         );
 
@@ -69,8 +69,9 @@ class Admin {
             $ver = file_exists(STB_PATH . $rel) ? filemtime(STB_PATH . $rel) : STB_VERSION;
             wp_register_script('stb-admin', STB_URL . $rel, ['jquery', 'wp-i18n'], $ver, true);
             wp_localize_script('stb-admin', 'stbConvert', [
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce'   => wp_create_nonce('stb_convert_nonce'),
+                'ajaxUrl'     => admin_url('admin-ajax.php'),
+                'nonce'       => wp_create_nonce('stb_convert_nonce'),
+                'editUrlBase' => admin_url('post.php?post='),
             ]);
             wp_enqueue_script('stb-admin');
             wp_set_script_translations(
@@ -120,7 +121,8 @@ class Admin {
 
     public function render_metabox(\WP_Post $post) {
         if (! current_user_can(Settings::required_capability())) return;
-        echo '<button type="button" class="button button-primary" id="stb-convert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
+        $edit_url = admin_url('post.php?post=' . (int) $post->ID . '&action=edit&classic-editor__forget');
+        echo '<button type="button" class="button button-primary" id="stb-convert-button" data-post-id="' . esc_attr($post->ID) . '" data-edit-url="' . esc_url($edit_url) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
         if (get_post_meta($post->ID, '_stbp_original_content', true)) {
             echo ' <button type="button" class="button" id="stb-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert', 'shortcode-to-blocks') . '</button>';
         }

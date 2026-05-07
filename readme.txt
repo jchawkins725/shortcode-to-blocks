@@ -65,7 +65,7 @@ Non-WPBakery shortcodes (contact forms, plugins, etc.) are automatically wrapped
 = Need more features? =
 
 A Pro version is available that includes additional converters, batch processing tools, logging, and more:
-https://www.jonathanchawkins.com/shortcode-to-blocks-pro/
+https://shortcodetoblocks.com/
 
 == Installation ==
 

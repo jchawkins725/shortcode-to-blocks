@@ -153,7 +153,7 @@
         el(
           'a',
           {
-            href: 'https://www.jonathanchawkins.com/shortcode-to-blocks-pro/',
+            href: 'https://shortcodetoblocks.com/',
             target: '_blank',
             rel: 'noopener'
           },

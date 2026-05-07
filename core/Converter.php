@@ -141,21 +141,100 @@ class Converter {
 
     /* ========= BASIC CONVERTERS ========= */
 
+    protected function get_row_alignment(array $attrs): string {
+        if (!empty($attrs['full_width']) && $attrs['full_width'] !== 'default') {
+            return 'full';
+        }
+        $options   = get_option('stb_options', []);
+        $row_width = is_array($options) ? ($options['row_width'] ?? 'content') : 'content';
+        if (in_array($row_width, ['content', 'wide', 'full'], true)) {
+            return $row_width;
+        }
+        return 'content';
+    }
+
+    protected function get_group_open_comment(string $align): string {
+        if ($align === 'wide' || $align === 'full') {
+            return '<!-- wp:group ' . wp_json_encode(['align' => $align]) . ' -->';
+        }
+
+        return '<!-- wp:group -->';
+    }
+
+    /**
+     * True when content represents exactly one top-level Gutenberg block tree.
+     */
+    protected function has_single_top_level_block(string $content): bool {
+        $content = trim($content);
+        if ($content === '') return false;
+
+        $pattern = '/<!--\s*(\/?)wp:([a-z0-9_\/-]+)(?:\s+[^>]*)?(\/?)\s*-->/i';
+        if (! preg_match_all($pattern, $content, $tokens, PREG_SET_ORDER)) {
+            return false;
+        }
+
+        $depth = 0;
+        $top_level_count = 0;
+
+        foreach ($tokens as $token) {
+            $is_closing = ($token[1] ?? '') === '/';
+            $is_self_closing = ($token[3] ?? '') === '/';
+
+            if ($is_closing) {
+                if ($depth === 0) return false;
+                $depth--;
+                continue;
+            }
+
+            if ($depth === 0) {
+                $top_level_count++;
+                if ($top_level_count > 1) return false;
+            }
+
+            if (! $is_self_closing) {
+                $depth++;
+            }
+        }
+
+        return $depth === 0 && $top_level_count === 1;
+    }
+
+    protected function get_vc_column_width_map(): array {
+        return [
+            '1/1' => '100%', '1/2' => '50%', '1/3' => '33.3333%', '2/3' => '66.6666%',
+            '1/4' => '25%',  '3/4' => '75%', '1/6' => '16.6666%', '5/6' => '83.3333%',
+            '1/5' => '20%',  '2/5' => '40%',  '3/5' => '60%',  '4/5' => '80%',
+            '1/8' => '12.5%','3/8' => '37.5%','5/8' => '62.5%','7/8' => '87.5%',
+            '1/12'=> '8.3333%','5/12'=>'41.6666%','7/12'=>'58.3333%','11/12'=>'91.6666%',
+        ];
+    }
+
+    protected function sanitize_anchor(?string $value): string {
+        if (empty($value)) return '';
+        return preg_replace('/[^A-Za-z0-9\-_:.]/', '', (string) $value);
+    }
+
+    protected function get_custom_classes_and_anchor(array $attrs): array {
+        $custom_classes = $this->classes_from_el_class($attrs['el_class'] ?? null);
+        $anchor         = $this->sanitize_anchor($attrs['el_id'] ?? null);
+        return [$custom_classes, $anchor];
+    }
+
     // [vc_row] → group + optional columns
     public function convert_vc_row($attrs, string $inner_content): string {
-        $class_parts = ['alignwide'];
-        $id_attr     = '';
+        $attrs = is_array($attrs) ? $attrs : [];
+        $align       = $this->get_row_alignment($attrs);
+        $class_parts = [];
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        $id_attr = $anchor !== '' ? ' id="' . esc_attr($anchor) . '"' : '';
 
-        if (!empty($attrs['full_width']) && $attrs['full_width'] !== 'default') {
-            $class_parts = ['alignfull'];
+        if ($align === 'wide') {
+            $class_parts[] = 'alignwide';
+        } elseif ($align === 'full') {
+            $class_parts[] = 'alignfull';
         }
 
-        $class_parts = array_merge($class_parts, $this->classes_from_el_class($attrs['el_class'] ?? null));
-
-        if (!empty($attrs['el_id'])) {
-            $id = preg_replace('/[^A-Za-z0-9\-_:.]/', '', $attrs['el_id']);
-            if ($id !== '') $id_attr = ' id="' . esc_attr($id) . '"';
-        }
+        $class_parts = array_merge($class_parts, $custom_classes);
 
         $group_class     = $this->compile_class_attr($class_parts);
         $converted_inner = $this->convert_vc_shortcodes_recursive($inner_content);
@@ -179,14 +258,26 @@ class Converter {
             }
 
             if ($is_full_width) {
-                if (preg_match('/<div class="wp-block-column[^>]*>(.*?)<\/div>/s', $column_inner, $m)) {
+                if (preg_match('/^\s*<div class="wp-block-column[^>]*>\s*(.*)\s*<\/div>\s*$/s', $column_inner, $m)) {
                     $column_inner_stripped = trim($m[1]);
                 } else {
                     $column_inner_stripped = $column_inner;
                 }
 
-                $align = (strpos($group_class, 'alignfull') !== false) ? 'full' : 'wide';
-                return "<!-- wp:group {\"align\":\"$align\"} -->\n" .
+                $row_has_explicit_wrapper = ! empty($attrs['el_id'])
+                    || ! empty($attrs['el_class'])
+                    || (! empty($attrs['full_width']) && $attrs['full_width'] !== 'default');
+
+                // If a plain single-column row already resolves to complete Gutenberg blocks,
+                // avoid wrapping it in an extra row-level group.
+                if (! $row_has_explicit_wrapper) {
+                    $normalized_inner = trim($this->convert_vc_column([], $column_inner_stripped, false));
+                    if ($normalized_inner !== '' && $this->has_single_top_level_block($normalized_inner)) {
+                        return $normalized_inner;
+                    }
+                }
+
+                return $this->get_group_open_comment($align) . "\n" .
                     '<div class="wp-block-group' . $group_class . '"' . $id_attr . ">\n" .
                     $this->convert_vc_column([], $column_inner_stripped, false) . "\n" .
                     "</div>\n" .
@@ -194,8 +285,7 @@ class Converter {
             }
         }
 
-        $align = (strpos($group_class, 'alignfull') !== false) ? 'full' : 'wide';
-        $out  = "<!-- wp:group {\"align\":\"$align\"} -->\n";
+        $out  = $this->get_group_open_comment($align) . "\n";
         $out .= '<div class="wp-block-group' . $group_class . '"' . $id_attr . ">\n";
 
         if ($column_count > 0) {
@@ -215,17 +305,12 @@ class Converter {
 
     // [vc_column]
     public function convert_vc_column($attrs, string $inner_content, bool $wrap = true): string {
+        $attrs = is_array($attrs) ? $attrs : [];
         $extra_class  = [];
         $inline_style = '';
         $block_meta   = '';
 
-        $width_map = [
-            '1/1' => '100%', '1/2' => '50%', '1/3' => '33.3333%', '2/3' => '66.6666%',
-            '1/4' => '25%',  '3/4' => '75%', '1/6' => '16.6666%', '5/6' => '83.3333%',
-            '1/5' => '20%',  '2/5' => '40%',  '3/5' => '60%',  '4/5' => '80%',
-            '1/8' => '12.5%','3/8' => '37.5%','5/8' => '62.5%','7/8' => '87.5%',
-            '1/12'=> '8.3333%','5/12'=>'41.6666%','7/12'=>'58.3333%','11/12'=>'91.6666%',
-        ];
+        $width_map = $this->get_vc_column_width_map();
 
         if (!empty($attrs['width']) && isset($width_map[$attrs['width']])) {
             $width_value  = $width_map[$attrs['width']];
@@ -233,14 +318,11 @@ class Converter {
             $block_meta   = '{"width":"' . esc_attr($width_value) . '"}';
         }
 
-        $extra_class = array_merge($extra_class, $this->classes_from_el_class($attrs['el_class'] ?? null));
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        $extra_class = array_merge($extra_class, $custom_classes);
         $class_attr  = $this->compile_class_attr(array_merge(['wp-block-column'], $extra_class));
 
-        $id_attr = '';
-        if (!empty($attrs['el_id'])) {
-            $id = preg_replace('/[^A-Za-z0-9\-_:.]/', '', $attrs['el_id']);
-            if ($id !== '') $id_attr = ' id="' . esc_attr($id) . '"';
-        }
+        $id_attr = $anchor !== '' ? ' id="' . esc_attr($anchor) . '"' : '';
 
         if (empty(trim($inner_content))) return '';
         if (!$wrap) return $inner_content;
@@ -255,7 +337,8 @@ class Converter {
 
     // [vc_row_inner]
     public function convert_vc_row_inner($attrs, string $inner_content): string {
-        $classes     = $this->classes_from_el_class($attrs['el_class'] ?? null);
+        $attrs       = is_array($attrs) ? $attrs : [];
+        [$classes]   = $this->get_custom_classes_and_anchor($attrs);
         $group_class = $classes ? ' ' . esc_attr(implode(' ', $classes)) : '';
 
         $converted_inner = $this->convert_vc_shortcodes_recursive($inner_content);
@@ -296,19 +379,14 @@ class Converter {
 
     // [vc_column_inner]
     public function convert_vc_column_inner($attrs, string $inner_content): string {
+        $attrs = is_array($attrs) ? $attrs : [];
         $inner_content = $this->wrap_non_vc_shortcodes($inner_content);
 
         $extra_class  = [];
         $inline_style = '';
         $block_meta   = '';
 
-        $width_map = [
-            '1/1' => '100%', '1/2' => '50%', '1/3' => '33.3333%', '2/3' => '66.6666%',
-            '1/4' => '25%',  '3/4' => '75%', '1/6' => '16.6666%', '5/6' => '83.3333%',
-            '1/5' => '20%',  '2/5' => '40%',  '3/5' => '60%',  '4/5' => '80%',
-            '1/8' => '12.5%','3/8' => '37.5%','5/8' => '62.5%','7/8' => '87.5%',
-            '1/12'=> '8.3333%','5/12'=>'41.6666%','7/12'=>'58.3333%','11/12'=>'91.6666%',
-        ];
+        $width_map = $this->get_vc_column_width_map();
 
         if (!empty($attrs['width']) && isset($width_map[$attrs['width']])) {
             $width_value  = $width_map[$attrs['width']];
@@ -316,14 +394,11 @@ class Converter {
             $block_meta   = '{"width":"' . esc_attr($width_value) . '"}';
         }
 
-        $extra_class = array_merge($extra_class, $this->classes_from_el_class($attrs['el_class'] ?? null));
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        $extra_class = array_merge($extra_class, $custom_classes);
         $class_attr  = $this->compile_class_attr(array_merge(['wp-block-column'], $extra_class));
 
-        $id_attr = '';
-        if (!empty($attrs['el_id'])) {
-            $id = preg_replace('/[^A-Za-z0-9\-_:.]/', '', $attrs['el_id']);
-            if ($id !== '') $id_attr = ' id="' . esc_attr($id) . '"';
-        }
+        $id_attr = $anchor !== '' ? ' id="' . esc_attr($anchor) . '"' : '';
 
         if (empty(trim($inner_content))) return '';
 
@@ -405,15 +480,14 @@ class Converter {
 
     // [vc_btn]
     public function convert_vc_btn($attrs, $inner_content = ''): string {
+        $attrs     = is_array($attrs) ? $attrs : [];
         $text      = $attrs['title'] ?? 'Click';
         $href      = '';
         $link_attr = $attrs['link'] ?? '';
         $align     = $attrs['align'] ?? 'left';
         $color     = $attrs['color'] ?? '';
 
-        if (preg_match('/url:([^|"]+)/', $link_attr, $m)) {
-            $href = esc_url($m[1]);
-        }
+        $href = $this->parse_vc_link((string) $link_attr);
 
         $color_hex_map = [
             'success'   => '#28a745', 'danger'  => '#dc3545',
@@ -428,7 +502,20 @@ class Converter {
 
         $button_block_attrs = [];
         $button_style_attr  = '';
-        $button_class       = 'wp-element-button wp-block-button__link';
+        $button_class       = 'wp-block-button__link';
+        $button_wrap_class  = 'wp-block-button';
+        $button_id_attr     = '';
+
+        [$button_custom_classes, $button_anchor] = $this->get_custom_classes_and_anchor($attrs);
+        if (!empty($button_custom_classes)) {
+            $button_block_attrs['className'] = implode(' ', $button_custom_classes);
+            $button_wrap_class .= ' ' . implode(' ', $button_custom_classes);
+        }
+
+        if ($button_anchor !== '') {
+            $button_block_attrs['anchor'] = $button_anchor;
+            $button_id_attr = ' id="' . esc_attr($button_anchor) . '"';
+        }
 
         if (!empty($color) && isset($color_hex_map[$color])) {
             $hex_color = $color_hex_map[$color];
@@ -442,13 +529,15 @@ class Converter {
             $button_class     .= ' has-background';
         }
 
+        $button_class .= ' wp-element-button';
+
         $button_attrs_json = !empty($button_block_attrs) ? wp_json_encode($button_block_attrs) : '';
         $button_comment    = !empty($button_attrs_json) ? "<!-- wp:button {$button_attrs_json} -->" : "<!-- wp:button -->";
 
         $out  = "<!-- wp:buttons {\"layout\":$layout} -->\n";
-        $out .= "<div class=\"wp-block-buttons\" style=\"justify-content:$justify\">\n";
+        $out .= "<div class=\"wp-block-buttons\">\n";
         $out .= "{$button_comment}\n";
-        $out .= "<div class=\"wp-block-button\"><a class=\"{$button_class}\" href=\"$href\"{$button_style_attr}>" . esc_html($text) . "</a></div>\n";
+        $out .= '<div class="' . esc_attr($button_wrap_class) . '"' . $button_id_attr . '><a class="' . esc_attr($button_class) . '" href="' . esc_url($href) . '"' . $button_style_attr . '>' . esc_html($text) . "</a></div>\n";
         $out .= "<!-- /wp:button -->\n";
         $out .= "</div>\n";
         $out .= "<!-- /wp:buttons -->";
@@ -467,6 +556,7 @@ class Converter {
 
     // [vc_empty_space]
     public function convert_vc_empty_space($attrs, $inner_content = ''): string {
+        $attrs  = is_array($attrs) ? $attrs : [];
         $height = trim($attrs['height'] ?? '20px');
         $px     = 20;
         if (preg_match('/^(\d+)(px)?$/i', $height, $m)) {
@@ -476,23 +566,41 @@ class Converter {
         } elseif (preg_match('/^(\d+)%$/', $height)) {
             $px = 40;
         }
-        return '<!-- wp:spacer {"height":' . $px . '} -->' . "\n"
-            . '<div style="height:' . $px . 'px" aria-hidden="true" class="wp-block-spacer"></div>' . "\n"
+        $block_attrs = ['height' => $px];
+        $class_names = ['wp-block-spacer'];
+
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        if (!empty($custom_classes)) {
+            $block_attrs['className'] = implode(' ', $custom_classes);
+            $class_names = array_merge($class_names, $custom_classes);
+        }
+
+        $id_attr = '';
+        if ($anchor !== '') {
+            $block_attrs['anchor'] = $anchor;
+            $id_attr = ' id="' . esc_attr($anchor) . '"';
+        }
+
+        return '<!-- wp:spacer ' . wp_json_encode($block_attrs) . ' -->' . "\n"
+            . '<div style="height:' . $px . 'px" aria-hidden="true" class="' . esc_attr(implode(' ', array_values(array_unique($class_names)))) . '"' . $id_attr . '></div>' . "\n"
             . '<!-- /wp:spacer -->';
     }
 
     // [vc_single_image]
     public function convert_vc_single_image($attrs, $inner_content = ''): string {
+        $attrs     = is_array($attrs) ? $attrs : [];
         $img_id    = 0;
         $img_url   = '';
         $size_slug = 'full';
         $link_href = '';
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        $anchor_attr = $anchor !== '' ? ' id="' . esc_attr($anchor) . '"' : '';
 
         if (!empty($attrs['image']) && ctype_digit((string)$attrs['image'])) {
             $img_id = (int) $attrs['image'];
         }
-        if (!empty($attrs['img_link']) && preg_match('/url:([^|"]+)/', $attrs['img_link'], $m)) {
-            $link_href = esc_url($m[1]);
+        if (!empty($attrs['img_link'])) {
+            $link_href = $this->parse_vc_link((string) $attrs['img_link']);
         }
 
         $requested = !empty($attrs['img_size']) && is_string($attrs['img_size'])
@@ -538,11 +646,14 @@ class Converter {
                 'linkDestination' => $link_href ? 'custom' : 'none',
             ];
             if ($link_href) $block['url'] = $link_href;
+            if (!empty($custom_classes)) $block['className'] = implode(' ', $custom_classes);
+            if ($anchor !== '') $block['anchor'] = $anchor;
             $json = wp_json_encode($block);
 
             $alt          = get_post_meta($img_id, '_wp_attachment_image_alt', true);
             $alt          = is_string($alt) ? $alt : '';
-            $figure_class = 'wp-block-image size-' . sanitize_html_class($size_slug);
+            $figure_classes = ['wp-block-image', 'size-' . sanitize_html_class($size_slug)];
+            $figure_classes = array_merge($figure_classes, $custom_classes);
             $img_tag      = '<img src="' . esc_url($img_url) . '" alt="' . esc_attr($alt) . '" class="wp-image-' . $img_id . '"/>';
 
             if ($link_href) {
@@ -550,55 +661,116 @@ class Converter {
             }
 
             return "<!-- wp:image {$json} -->\n"
-                . '<figure class="' . $figure_class . '">' . $img_tag . '</figure>' . "\n"
+                . '<figure class="' . esc_attr(implode(' ', array_values(array_unique($figure_classes)))) . '"' . $anchor_attr . '>' . $img_tag . '</figure>' . "\n"
                 . '<!-- /wp:image -->';
         } else {
             $block = [
                 'url'             => $img_url,
                 'linkDestination' => $link_href ? 'custom' : 'none',
             ];
+            if (!empty($custom_classes)) $block['className'] = implode(' ', $custom_classes);
+            if ($anchor !== '') $block['anchor'] = $anchor;
             $json    = wp_json_encode($block);
             $img_tag = '<img src="' . esc_url($img_url) . '" alt=""/>';
             if ($link_href) {
                 $img_tag = '<a href="' . esc_url($link_href) . '">' . $img_tag . '</a>';
             }
 
+            $figure_classes = array_merge(['wp-block-image'], $custom_classes);
+
             return "<!-- wp:image {$json} -->\n"
-                . '<figure class="wp-block-image">' . $img_tag . '</figure>' . "\n"
+                . '<figure class="' . esc_attr(implode(' ', array_values(array_unique($figure_classes)))) . '"' . $anchor_attr . '>' . $img_tag . '</figure>' . "\n"
                 . '<!-- /wp:image -->';
         }
     }
 
     // [vc_custom_heading]
     public function convert_vc_custom_heading($attrs, $inner_content = ''): string {
+        $attrs = is_array($attrs) ? $attrs : [];
         $text  = $inner_content ?: ($attrs['text'] ?? '');
         $level = isset($attrs['level']) ? (int) $attrs['level'] : 2;
         $level = in_array($level, [1,2,3,4,5,6], true) ? $level : 2;
         $text  = esc_html(wp_strip_all_tags($text));
         if ($text === '') return '';
-        return '<!-- wp:heading {"level":' . $level . '} -->' . "\n"
-            . '<h' . $level . '>' . $text . '</h' . $level . '>' . "\n"
+        $block_attrs = ['level' => $level];
+        $class_names = ['wp-block-heading'];
+
+        [$custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        if (!empty($custom_classes)) {
+            $block_attrs['className'] = implode(' ', $custom_classes);
+            $class_names = array_merge($class_names, $custom_classes);
+        }
+
+        $id_attr = '';
+        if ($anchor !== '') {
+            $block_attrs['anchor'] = $anchor;
+            $id_attr = ' id="' . esc_attr($anchor) . '"';
+        }
+
+        return '<!-- wp:heading ' . wp_json_encode($block_attrs) . ' -->' . "\n"
+            . '<h' . $level . ' class="' . esc_attr(implode(' ', array_values(array_unique($class_names)))) . '"' . $id_attr . '>' . $text . '</h' . $level . '>' . "\n"
             . '<!-- /wp:heading -->';
     }
 
     // [vc_separator]
     public function convert_vc_separator($attrs, $inner_content = ''): string {
-        $class = 'wp-block-separator';
-        $style = '';
+        $attrs = is_array($attrs) ? $attrs : [];
 
-        if (!empty($attrs['style']) && in_array($attrs['style'], ['dashed','dotted','double'], true)) {
-            $class .= ' is-style-' . sanitize_html_class($attrs['style']);
-        }
-        if (!empty($attrs['color'])) {
-            $color  = preg_replace('/[^#a-zA-Z0-9(),.% -]/', '', $attrs['color']);
-            $style .= "border-color:$color;";
-        }
-        if (!empty($attrs['el_width']) && preg_match('/^\d+%$/', $attrs['el_width'])) {
-            $style .= "width:{$attrs['el_width']};margin-left:auto;margin-right:auto;";
+        $block_attrs   = [];
+        $class_names   = ['wp-block-separator'];
+        $custom_classes = [];
+        $inline_styles = [];
+
+        $style = strtolower(trim((string) ($attrs['style'] ?? '')));
+        if ($style === 'dotted') {
+            $custom_classes[] = 'is-style-dots';
         }
 
-        $style_attr = $style ? ' style="' . esc_attr($style) . '"' : '';
-        return "<!-- wp:separator -->\n<hr class=\"$class\"$style_attr />\n<!-- /wp:separator -->\n";
+        $width = trim((string) ($attrs['el_width'] ?? ''));
+        if ($width === '100%') {
+            $custom_classes[] = 'is-style-wide';
+        }
+
+        [$user_custom_classes, $anchor] = $this->get_custom_classes_and_anchor($attrs);
+        $custom_classes = array_merge($custom_classes, $user_custom_classes);
+        if (!empty($custom_classes)) {
+            $block_attrs['className'] = implode(' ', array_values(array_unique($custom_classes)));
+            $class_names = array_merge($class_names, $custom_classes);
+        }
+
+        if ($anchor !== '') {
+            $block_attrs['anchor'] = $anchor;
+        }
+
+        $color = preg_replace('/[^#a-zA-Z0-9(),.% -]/', '', (string) ($attrs['color'] ?? ''));
+        if ($color !== '') {
+            $block_attrs['style'] = ['color' => ['background' => $color]];
+            $class_names[] = 'has-text-color';
+            $inline_styles[] = 'background-color:' . $color;
+            $inline_styles[] = 'color:' . $color;
+        }
+
+        $class_names[] = 'has-alpha-channel-opacity';
+
+        if ($color !== '') {
+            $class_names[] = 'has-background';
+        }
+
+        if (!empty($custom_classes)) {
+            $class_names = array_merge($class_names, $custom_classes);
+        }
+
+        $comment_open = empty($block_attrs)
+            ? '<!-- wp:separator -->'
+            : '<!-- wp:separator ' . wp_json_encode($block_attrs) . ' -->';
+
+        $class_attr = esc_attr(implode(' ', array_values(array_unique($class_names))));
+        $style_attr = $inline_styles ? ' style="' . esc_attr(implode(';', $inline_styles) . ';') . '"' : '';
+        $id_attr    = !empty($block_attrs['anchor']) ? ' id="' . esc_attr($block_attrs['anchor']) . '"' : '';
+
+        return $comment_open . "\n"
+            . '<hr class="' . $class_attr . '"' . $id_attr . $style_attr . " />\n"
+            . "<!-- /wp:separator -->\n";
     }
 
     /* ========= UTILITIES (shared with Pro) ========= */

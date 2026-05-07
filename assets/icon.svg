@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .i0 { fill: none; stroke: #a0a5aa; stroke-linecap: round; stroke-width: 2.5px; }
+    .i1 { fill: none; stroke: #a0a5aa; stroke-linecap: round; stroke-width: 3px; }
+    .i2 { fill: none; stroke: #a0a5aa; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2px; }
+    .i3 { fill: #a0a5aa; }
+  </style>
+  <g>
+    <line class="i0" x1="28.5" y1="32" x2="33.5" y2="32"/>
+    <path class="i2" d="M32.9,34.8l2.7-2.8-2.7-2.7"/>
+  </g>
+  <path class="i1" d="M18.9,22.2c2.7,0,4,1.1,4,3.3v13.1c0,2.2-1.3,3.3-4,3.3"/>
+  <rect class="i3" x="39.3" y="20.7" width="19" height="22.5" rx="4" ry="4"/>
+  <path class="i1" d="M10.8,41.8c-2.7,0-4-1.1-4-3.3v-13.1c0-2.2,1.3-3.3,4-3.3"/>
+</svg>

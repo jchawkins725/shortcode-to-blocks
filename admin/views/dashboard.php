@@ -65,7 +65,7 @@ $is_pro = defined('STBP_VERSION');
             <li><?php esc_html_e('Tools page with scanning, exporting, and backup management', 'shortcode-to-blocks'); ?></li>
         </ul>
         <p>
-            <a href="https://www.jonathanchawkins.com/shortcode-to-blocks-pro/" class="button button-primary" target="_blank" rel="noopener noreferrer">
+            <a href="https://shortcodetoblocks.com/" class="button button-primary" target="_blank" rel="noopener noreferrer">
                 <?php esc_html_e('Learn More About Pro', 'shortcode-to-blocks'); ?>
             </a>
         </p>
