@@ -4,7 +4,7 @@ Tags: gutenberg, wpbakery, shortcode, converter, migration
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,8 +64,7 @@ Non-WPBakery shortcodes (contact forms, plugins, etc.) are automatically wrapped
 
 = Need more features? =
 
-A Pro version is available that includes additional converters, batch processing tools, logging, and more:
-https://shortcodetoblocks.com/
+A Pro version is available that includes additional converters, batch processing tools, logging, and more: [Shortcode to Blocks Pro](https://shortcodetoblocks.com/)
 
 == Installation ==
 
@@ -96,12 +95,17 @@ The free version handles the most common layout and content shortcodes for singl
 
 == Screenshots ==
 
-1. Gutenberg sidebar panel with Convert / Revert buttons
-2. Classic editor metabox
-3. Dashboard with conversion overview
-4. Settings page
+1. Gutenberg sidebar panel showing detected WPBakery content and the Convert to blocks action.
+2. Gutenberg sidebar panel after conversion, showing Backup available and the Revert to backup action.
+3. Classic editor metabox with Convert content.
+4. Classic editor metabox after conversion with Revert to backup.
+5. Dashboard with conversion overview and quick how-to steps.
+6. Settings screen for post types, required capability, row width defaults, and uninstall behavior.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fix: Classic Editor metabox now shows only one action at a time (Convert or Revert), matching Gutenberg behavior.
 
 = 1.0.0 =
 * Initial release
@@ -113,6 +117,9 @@ The free version handles the most common layout and content shortcodes for singl
 * Extensible architecture for Pro add-on
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Fixes Classic Editor button visibility so Convert/Revert are shown correctly based on content state.
 
 = 1.0.0 =
 First release. Always test on a staging site before converting production content.

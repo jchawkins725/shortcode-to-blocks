@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Shortcode to Blocks
  * Description: Convert WPBakery Page Builder content to native Gutenberg blocks. Basic single-post conversion for common shortcodes.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Jonathan Hawkins
  * Author URI: https://shortcodetoblocks.com/
  * License:     GPLv2 or later
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || exit;
 
-define('STBC_VERSION', '1.0.0');
+define('STBC_VERSION', '1.0.1');
 define('STBC_FILE', __FILE__);
 define('STBC_PATH', plugin_dir_path(__FILE__));
 define('STBC_URL', plugin_dir_url(__FILE__));

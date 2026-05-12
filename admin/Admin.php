@@ -121,10 +121,14 @@ class Admin {
 
     public function render_metabox(\WP_Post $post) {
         if (! current_user_can(Settings::required_capability())) return;
+        $has_backup = (bool) get_post_meta($post->ID, '_stbp_original_content', true);
+        $has_vc     = \STBC\core\Detector::has_vc((string) $post->post_content);
+        $mode       = $has_vc ? 'convert' : ($has_backup ? 'revert' : null);
         $edit_url = admin_url('post.php?post=' . (int) $post->ID . '&action=edit&classic-editor__forget');
-        echo '<button type="button" class="button button-primary" id="stbc-convert-button" data-post-id="' . esc_attr($post->ID) . '" data-edit-url="' . esc_url($edit_url) . '">' . esc_html__('Convert content', 'shortcode-to-blocks') . '</button>';
-        if (get_post_meta($post->ID, '_stbp_original_content', true)) {
-            echo ' <button type="button" class="button" id="stbc-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert', 'shortcode-to-blocks') . '</button>';
+        if ($mode === 'convert') {
+            echo '<button type="button" class="button button-primary" id="stbc-convert-button" data-post-id="' . esc_attr($post->ID) . '" data-edit-url="' . esc_url($edit_url) . '">' . esc_html__('Convert to blocks', 'shortcode-to-blocks') . '</button>';
+        } elseif ($mode === 'revert') {
+            echo ' <button type="button" class="button" id="stbc-revert-button" data-post-id="' . esc_attr($post->ID) . '">' . esc_html__('Revert to backup', 'shortcode-to-blocks') . '</button>';
         }
         wp_nonce_field('stbc_convert_nonce', 'stbc_convert_nonce_field');
     }
